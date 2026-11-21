@@ -12,7 +12,6 @@ import { Loading } from '@/components/ui/Loading';
 import { apiFetch } from '@/lib/client/api';
 import { PROGRAM_CODE } from '@/lib/constants';
 import { useSettings } from '@/lib/client/settings';
-import { speak, stopSpeaking, useSpeaking } from '@/lib/client/tts';
 
 const TODO = '신청하고 싶은 복지를 골라 주세요';
 const DESCRIPTION =
@@ -31,8 +30,7 @@ export default function Home() {
   const [programs, setPrograms] = useState<ProgramListItem[] | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [soon, setSoon] = useState<ProgramListItem | null>(null);
-  const { sound, fontSize, setSound, setFontSize } = useSettings();
-  const reading = useSpeaking();
+  const { fontSize, setFontSize } = useSettings();
 
   useEffect(() => {
     let alive = true;
@@ -45,14 +43,8 @@ export default function Home() {
   const available = programs?.find((p) => p.status === 'available') ?? null;
   const availableCode = available?.code ?? PROGRAM_CODE;
 
-  function toggleSound() {
-    if (sound === 'on') stopSpeaking();
-    setSound(sound === 'on' ? 'off' : 'on');
-  }
-
   function openSoon(p: ProgramListItem) {
     setSoon(p);
-    speak(soonText(p));
   }
 
   return (
@@ -95,42 +87,51 @@ export default function Home() {
             </div>
           )}
           {programs && (
-            <ul className="grid gap-3">
-              {programs.map((p) => {
-                const open = p.status === 'available';
-                return (
+            <>
+              <ul className="grid gap-3">
+                {programs.filter((p) => p.status === 'available').map((p) => (
                   <li key={p.code}>
                     <button
                       type="button"
-                      onClick={() => (open ? router.push('/p/' + encodeURIComponent(p.code)) : openSoon(p))}
-                      className={
-                        'flex min-h-20 w-full items-center gap-3 rounded-[20px] border px-4 py-3 text-left ' +
-                        (open
-                          ? 'border-primary bg-primary text-white shadow-[0_4px_0_#07132e,0_14px_30px_#24388b30]'
-                          : 'border-hair bg-[#eef1f6] text-ink')
-                      }
+                      onClick={() => router.push('/p/' + encodeURIComponent(p.code))}
+                      className="flex min-h-20 w-full items-center gap-3 rounded-[20px] border border-primary bg-primary px-4 py-3 text-left text-white shadow-[0_4px_0_#07132e,0_14px_30px_#24388b30]"
                     >
-                      <span
-                        aria-hidden="true"
-                        className={
-                          'grid size-10 shrink-0 place-items-center rounded-[12px] text-[1.1rem] ' +
-                          (open ? 'bg-white/15 text-white' : 'bg-white text-muted')
-                        }
-                      >
-                        ▤
-                      </span>
+                      <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-[12px] bg-white/15 text-[1.2rem]">▤</span>
                       <span className="grid min-w-0 flex-1 gap-1">
-                        <span className={'text-[1.1rem] font-bold leading-snug ' + (open ? '' : 'text-[#3d4552]')}>{p.name}</span>
-                        <span className={open ? 'marker w-fit bg-white text-primary' : 'marker marker-neutral w-fit border border-[#9aa4b4]'}>
-                          {open ? '✅ 신청 준비 가능' : '⏳ 준비 중'}
-                        </span>
+                        <span className="text-[1.15rem] font-bold leading-snug">{p.name}</span>
+                        <span className="marker w-fit bg-white text-primary">✅ 신청 준비 가능</span>
                       </span>
-                      {open && <span aria-hidden="true" className="text-[1.3rem]">→</span>}
+                      <span aria-hidden="true" className="text-[1.4rem]">→</span>
                     </button>
                   </li>
-                );
-              })}
-            </ul>
+                ))}
+              </ul>
+              {programs.some((p) => p.status !== 'available') && (
+                <div className="grid gap-2">
+                  <h3 className="text-[max(17px,0.85rem)] font-bold text-muted">곧 준비돼요</h3>
+                  <ul className="grid grid-cols-2 gap-2">
+                    {programs.filter((p) => p.status !== 'available').map((p) => {
+                      const [main, sub] = splitName(p.name);
+                      return (
+                        <li key={p.code}>
+                          <button
+                            type="button"
+                            onClick={() => openSoon(p)}
+                            className="flex h-full min-h-16 w-full flex-col items-start justify-between gap-1 rounded-2xl border border-hair bg-white px-3 py-2 text-left"
+                          >
+                            <span className="text-[max(17px,0.85rem)] font-bold leading-snug text-ink">
+                              {main}
+                              {sub && <span className="block text-[max(15px,0.7rem)] font-normal text-muted">{sub}</span>}
+                            </span>
+                            <span className="marker marker-neutral text-[max(14px,0.7rem)]">⏳ 준비 중</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+            </>
           )}
         </section>
 
@@ -143,17 +144,9 @@ export default function Home() {
           </BigButton>
         </div>
 
-        <div className="grid gap-3" aria-label="읽어 주기와 글씨 설정">
-          <div className="grid gap-3 min-[360px]:grid-cols-2">
-            <BigButton variant="secondary" onClick={toggleSound}>
-              소리 {sound === 'on' ? '켜짐' : '꺼짐'}
-            </BigButton>
-            <BigButton variant="secondary" onClick={() => setFontSize(fontSize === 'large' ? 'normal' : 'large')}>
-              글씨 {fontSize === 'large' ? '크게' : '보통'}
-            </BigButton>
-          </div>
-          <BigButton variant="secondary" onClick={() => (reading ? stopSpeaking() : speak(WELCOME))}>
-            {reading ? '■ 그만 듣기' : '🔊 다시 듣기'}
+        <div className="grid gap-3" aria-label="글씨 설정">
+          <BigButton variant="secondary" onClick={() => setFontSize(fontSize === 'large' ? 'normal' : 'large')}>
+            글씨 {fontSize === 'large' ? '크게' : '보통'}
           </BigButton>
         </div>
 
@@ -177,6 +170,12 @@ export default function Home() {
       />
     </AppShell>
   );
+}
+
+/** "국민기초생활보장 (생계, 의료, 주거급여)" → ["국민기초생활보장", "생계, 의료, 주거급여"] */
+function splitName(name: string): [string, string | null] {
+  const m = name.match(/^(.*?)\s*\((.*)\)\s*$/);
+  return m ? [m[1], m[2]] : [name, null];
 }
 
 function soonText(p: ProgramListItem): string {

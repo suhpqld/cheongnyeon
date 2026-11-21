@@ -38,6 +38,33 @@ const LOCAL_LABEL: Record<string, string> = {
 
 interface LocalGroup { title: string; keys: string[] }
 
+/** 따로 입력받지 않는 칸: 휴대전화는 전화번호와 같게, 월과 일은 날짜 고르기 하나로 */
+const HIDDEN_KEYS = new Set(['applicant.mobile', 'visit.month', 'visit.day']);
+const SAME_AS_APPLICANT = 'account.owner_name';
+
+/** 입력한 값에서 양식에 찍을 값을 만든다 (전화번호 두 칸, 예금주, 신청 날짜) */
+function effectiveLocal(local: LocalValues, ownerSame: boolean, visitDate: string): LocalValues {
+  const out: LocalValues = { ...local };
+  out['applicant.mobile'] = local['applicant.phone'];
+  if (ownerSame) out[SAME_AS_APPLICANT] = local['applicant.name'];
+  const [y, m, d] = visitDate ? visitDate.split('-') : [];
+  out['visit.year'] = y ?? '';
+  out['visit.month'] = m ? String(Number(m)) : '';
+  out['visit.day'] = d ? String(Number(d)) : '';
+  return out;
+}
+
+/** 오늘 날짜 (서울) YYYY-MM-DD */
+function todaySeoul(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
+}
+
+function dateKo(v: string): string {
+  const [y, m, d] = v.split('-').map(Number);
+  const w = ['일', '월', '화', '수', '목', '금', '토'][new Date(y, m - 1, d).getDay()];
+  return `${y}년 ${m}월 ${d}일 (${w})`;
+}
+
 /** 양식 칸의 local_key로 입력칸 묶음을 만든다. 묶음 답은 줄 수만큼만 */
 function localGroups(data: PrintData): LocalGroup[] {
   const keys: string[] = [];
@@ -54,6 +81,7 @@ function localGroups(data: PrintData): LocalGroup[] {
     return '그 밖에';
   };
   for (const k of keys) {
+    if (HIDDEN_KEYS.has(k)) continue;
     const title = titleOf(k);
     if (!title) continue;
     if (!groups.has(title)) groups.set(title, { title, keys: [] });
@@ -64,6 +92,8 @@ function localGroups(data: PrintData): LocalGroup[] {
 
 const labelOf = (k: string) => {
   if (k === 'signer.name') return '대리 신청인 이름';
+  if (k === 'applicant.phone') return '전화번호 (휴대전화)';
+  if (k === 'visit.year') return '주민센터에 가는 날';
   return LOCAL_LABEL[k.split('.').pop() ?? k] ?? k;
 };
 
@@ -73,6 +103,22 @@ function formatRrn(raw: string): string {
   return d.length > 6 ? `${d.slice(0, 6)}-${d.slice(6)}` : d;
 }
 
+/**
+ * 전화번호: 숫자만 받아서 치는 대로 하이픈을 넣는다.
+ * 02-123-4567, 02-1234-5678 / 010-1234-5678, 031-123-4567 / 1588-1234
+ */
+export function formatPhone(raw: string): string {
+  const d = raw.replace(/\D/g, '').slice(0, 11);
+  if (/^1[5-9]/.test(d)) return d.length > 4 ? `${d.slice(0, 4)}-${d.slice(4, 8)}` : d;
+  const area = d.startsWith('02') ? 2 : 3;
+  if (d.length <= area) return d;
+  const rest = d.slice(area);
+  // 가운데 자리: 휴대폰(01X)은 늘 4자리 (치는 중에 하이픈이 안 움직이게), 지역번호는 남은 숫자가 8개면 4자리
+  const mid = d.startsWith('01') || rest.length >= 8 ? 4 : 3;
+  if (rest.length <= mid) return `${d.slice(0, area)}-${rest}`;
+  return `${d.slice(0, area)}-${rest.slice(0, mid)}-${rest.slice(mid, mid + 4)}`;
+}
+
 export default function PrintScreen({ appId }: { appId: string }) {
   const session = useCardSession(appId);
   const base = '/a/' + encodeURIComponent(appId);
@@ -80,6 +126,8 @@ export default function PrintScreen({ appId }: { appId: string }) {
   const [error, setError] = useState<string | null>(null);
   // 이름, 주민등록번호, 전화번호는 이 화면 상태에만 둔다. 서버로 보내지도, 저장하지도 않는다.
   const [local, setLocal] = useState<LocalValues>({});
+  const [ownerSame, setOwnerSame] = useState(false);
+  const [visitDate, setVisitDate] = useState('');
 
   useEffect(() => {
     if (typeof session !== 'object') return;
@@ -108,12 +156,16 @@ export default function PrintScreen({ appId }: { appId: string }) {
   }
 
   const set = (k: string) => (e: ChangeEvent<HTMLInputElement>) =>
-    setLocal((v) => ({ ...v, [k]: k.endsWith('rrn') ? formatRrn(e.target.value) : e.target.value }));
+    setLocal((v) => ({
+      ...v,
+      [k]: k.endsWith('rrn') ? formatRrn(e.target.value) : /(phone|mobile)$/.test(k) ? formatPhone(e.target.value) : e.target.value,
+    }));
   const groups = data ? localGroups(data) : [];
+  const shown = effectiveLocal(local, ownerSame, visitDate);
 
   const pages = data && (
     <>
-      <FormPage data={data} local={local} />
+      <FormPage data={data} local={shown} />
       <ReadyCardPage data={data} script={script} />
     </>
   );
@@ -123,7 +175,6 @@ export default function PrintScreen({ appId }: { appId: string }) {
       step={4}
       back={{ href: base + '/ready' }}
       todo="출력하거나 PDF로 저장해 주세요"
-      speakText="출력하거나 PDF로 저장해 주세요"
       resumeCode={typeof session === 'object' ? session.resumeCode : null}
     >
       <style>{PRINT_CSS}</style>
@@ -139,19 +190,74 @@ export default function PrintScreen({ appId }: { appId: string }) {
           {groups.map((g) => (
             <fieldset key={g.title} className="grid gap-2 rounded-xl border border-hair bg-[#f8faff] p-3">
               <legend className="px-1 font-bold">{g.title}</legend>
-              {g.keys.map((k) => (
-                <label key={k} className="grid gap-1 font-bold">
-                  {labelOf(k)}
-                  <input
-                    className={input}
-                    value={local[k] ?? ''}
-                    onChange={set(k)}
-                    autoComplete="off"
-                    inputMode={k.endsWith('rrn') || k.startsWith('visit.') || k.endsWith('number') ? 'numeric' : k.endsWith('phone') || k.endsWith('mobile') ? 'tel' : undefined}
-                    placeholder={k.endsWith('rrn') ? '000000-0000000' : undefined}
-                  />
-                </label>
-              ))}
+              {g.keys.map((k) => {
+                if (k === 'visit.year') {
+                  return (
+                    <div key={k} className="grid gap-2">
+                      <label className="grid gap-1 font-bold">
+                        {labelOf(k)}
+                        <input
+                          type="date"
+                          className={input}
+                          value={visitDate}
+                          onChange={(e) => setVisitDate(e.target.value)}
+                        />
+                      </label>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button type="button" className="min-h-12 rounded-xl border-2 border-primary-dark bg-white px-3 font-bold" onClick={() => setVisitDate(todaySeoul())}>
+                          오늘
+                        </button>
+                        {visitDate && (
+                          <button type="button" className="min-h-12 rounded-xl px-3 font-bold text-primary-dark underline underline-offset-4" onClick={() => setVisitDate('')}>
+                            지우기
+                          </button>
+                        )}
+                        <span className="font-bold">{visitDate ? dateKo(visitDate) : '날짜 칸을 누르면 달력이 나와요'}</span>
+                      </div>
+                    </div>
+                  );
+                }
+                if (k === SAME_AS_APPLICANT) {
+                  return (
+                    <div key={k} className="grid gap-2">
+                      <label className="grid gap-1 font-bold">
+                        {labelOf(k)}
+                        <input
+                          className={input}
+                          value={(ownerSame ? local['applicant.name'] : local[k]) ?? ''}
+                          onChange={set(k)}
+                          disabled={ownerSame}
+                          autoComplete="off"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        aria-pressed={ownerSame}
+                        onClick={() => setOwnerSame((v) => !v)}
+                        className={
+                          'min-h-12 rounded-xl border-2 px-3 font-bold ' +
+                          (ownerSame ? 'border-primary bg-primary-soft text-primary-dark' : 'border-primary-dark bg-white text-ink')
+                        }
+                      >
+                        {ownerSame ? '✓ 신청자와 같음' : '신청자와 같음'}
+                      </button>
+                    </div>
+                  );
+                }
+                return (
+                  <label key={k} className="grid gap-1 font-bold">
+                    {labelOf(k)}
+                    <input
+                      className={input}
+                      value={local[k] ?? ''}
+                      onChange={set(k)}
+                      autoComplete="off"
+                      inputMode={k.endsWith('rrn') || k.endsWith('number') ? 'numeric' : k.endsWith('phone') ? 'tel' : undefined}
+                      placeholder={k.endsWith('rrn') ? '000000-0000000' : undefined}
+                    />
+                  </label>
+                );
+              })}
             </fieldset>
           ))}
         </div>

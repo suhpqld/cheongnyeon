@@ -79,7 +79,6 @@ export default function SupplementStart() {
             {formatCode(created.resumeCode)}
           </p>
           <p>다른 기기에서도 이 번호로 이어서 할 수 있어요.</p>
-          <BigButton variant="secondary" onClick={() => speak(readCode)}>🔊 번호 다시 듣기</BigButton>
           <BigButton href={photoPath(created.appId)}>적었어요, 다음으로</BigButton>
         </div>
       </AppShell>

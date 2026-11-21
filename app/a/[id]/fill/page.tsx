@@ -12,7 +12,6 @@ import { AppShell } from '@/components/ui/AppShell';
 import { BigButton } from '@/components/ui/BigButton';
 import { Boknyang } from '@/components/ui/Boknyang';
 import { Loading } from '@/components/ui/Loading';
-import { MicButton } from '@/components/voice/MicButton';
 import { apiFetch, ApiError } from '@/lib/client/api';
 import { displayAnswer, formatWon } from '@/lib/format';
 import { getSession } from '@/lib/client/session';
@@ -157,7 +156,6 @@ function FillQuestionScreen() {
         <h1>{questionText(activeField, helperMode)}</h1>
         {activeField.helpEasy && <p>{activeField.helpEasy}</p>}
         <AnswerArea key={activeField.key} field={activeField} value={currentAnswer?.value} answers={form.answers} onAnswer={(value) => selectButton(value, state === 'approximate')} />
-        <MicButton appId={id} helperMode={helperMode} field={activeField} otherFields={form.fields.filter((item) => item.key !== activeField.key)} clarify={null} onResult={onVoiceResult} />
         {activeField.allowUnknown && state === 'question' && <BigButton variant="secondary" onClick={() => setState('unknown')}>잘 모르겠어요</BigButton>}
       </>}
       {state === 'question' && currentAnswer && <p className="text-sm">현재 답: {displayAnswer(activeField, currentAnswer)}</p>}

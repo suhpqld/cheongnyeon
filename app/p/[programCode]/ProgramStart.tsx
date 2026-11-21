@@ -10,7 +10,6 @@ import { Disclaimer } from '@/components/ui/Disclaimer';
 import { Loading } from '@/components/ui/Loading';
 import { apiFetch, ApiError } from '@/lib/client/api';
 import { saveSession } from '@/lib/client/session';
-import { speak } from '@/lib/client/tts';
 import { formatCode } from '@/lib/format';
 import type { HelperMode, Session } from '@/lib/types';
 
@@ -101,9 +100,6 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
             {formatCode(session.resumeCode)}
           </p>
           <p className="leading-relaxed">언제 그만둬도 이 번호로 이어서 할 수 있어요. 종이에 적어 두세요.</p>
-          <BigButton variant="secondary" icon="🔊" onClick={() => speak([...session.resumeCode].join(', '))}>
-            번호 다시 듣기
-          </BigButton>
           <BigButton onClick={() => router.push(fillHref)}>적었어요, 시작할게요</BigButton>
         </div>
       </AppShell>

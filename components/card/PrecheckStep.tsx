@@ -64,9 +64,6 @@ export default function PrecheckStep({
           <div className="rounded-2xl border-[3px] border-primary bg-primary-soft p-5">
             <p className="text-[1rem] font-bold">이렇게 하면 돼요</p>
             <p className="mt-2 text-[1.2rem] font-bold leading-relaxed">{rule.fixEasy}</p>
-            <button type="button" onClick={() => onSpeak?.(rule.fixEasy)} className={btn.secondary + ' mt-4'}>
-              🔊 읽어 주기
-            </button>
           </div>
           <button type="button" onClick={onNext} className={btn.primary}>
             알겠어요, 다음

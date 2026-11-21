@@ -55,7 +55,6 @@ export default function Intro() {
       <h1>이어서 하기 번호예요</h1>
       <p className="text-5xl font-black tracking-widest">{formatCode(session.resumeCode)}</p>
       <p>언제 그만둬도 이 번호로 이어서 할 수 있어요. 종이에 적어 두세요.</p>
-      <BigButton variant="secondary" onClick={() => window.speechSynthesis?.speak(new SpeechSynthesisUtterance([...session.resumeCode].join(', ')))}>🔊 번호 다시 듣기</BigButton>
       <BigButton onClick={() => router.push('/a/' + encodeURIComponent(session.appId) + '/q' + (new URLSearchParams(window.location.search).has('demo') ? '?demo=1' : ''))}>적었어요, 시작할게요</BigButton>
     </div>
   </AppShell>;

@@ -139,9 +139,6 @@ function FamilyView({ code }: { code: string }) {
         <p>서류를 같이 떼거나 주민센터에 함께 가 주세요.</p>
         <p>이 링크는 {displaySeoulDate(view.expiresAt)}까지 열려요.</p>
         <div className="grid gap-3 print:hidden">
-          <BigButton onClick={() => reading ? stopSpeaking() : speak(speech)} variant="secondary">
-            {reading ? '■ 그만 듣기' : '🔊 읽어 주기'}
-          </BigButton>
           <BigButton onClick={() => window.print()} variant="secondary">🖨 출력하기</BigButton>
         </div>
         <Disclaimer />

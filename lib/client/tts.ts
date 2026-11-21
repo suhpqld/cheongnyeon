@@ -26,7 +26,11 @@ export function stopSpeaking(): void {
   setSpeaking(false);
 }
 
+/** 음성 안내를 뺐다 (PM 결정). 다시 켜려면 true로 */
+export const VOICE_ENABLED = false;
+
 export function speak(text: string): void {
+  if (!VOICE_ENABLED) return;
   if (typeof window === 'undefined' || !window.speechSynthesis || !soundEnabled()) return;
   stopSpeaking();
   const sentences = text.trim().split(/(?<=[.!?요다])\s+/u).filter(Boolean);

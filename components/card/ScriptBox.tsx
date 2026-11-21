@@ -1,7 +1,6 @@
 'use client';
 
 import { OfficeLinks } from './PlaceGroups';
-import { btn } from './styles';
 
 type Place = { district: string | null; dong: string | null };
 
@@ -43,23 +42,12 @@ export default function ScriptBox({ script, loading, onSpeak, supplementNames, c
         <p className="mt-3 text-[1.2rem] font-bold leading-relaxed" aria-live="polite">
           {loading ? '복냥이가 할 말을 정리하는 중이에요' : `“${script ?? ''}”`}
         </p>
-        <button
-          type="button"
-          disabled={loading || !script}
-          onClick={() => script && onSpeak?.(script)}
-          className={btn.secondary + ' mt-4'}
-        >
-          🔊 읽어 주기
-        </button>
       </div>
 
       {sub && (
         <div className="rounded-2xl border-[3px] border-warn bg-white p-5">
           <h3 className="text-[1rem] font-bold">추가 서류를 낼 때</h3>
           <p className="mt-3 text-[1.1rem] font-bold leading-relaxed">“{sub}”</p>
-          <button type="button" onClick={() => onSpeak?.(sub)} className={btn.secondary + ' mt-4'}>
-            🔊 읽어 주기
-          </button>
         </div>
       )}
 
