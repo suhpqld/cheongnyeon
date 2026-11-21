@@ -45,13 +45,18 @@ function RowsTable({ sections }: { sections: FormSection[] }) {
 
 /** 1장. 양식 그림이 있으면 그 위에 겹치고, 아직 없으면 신청서 칸 순서대로 표 */
 export function FormPage({ data, local }: { data: PrintData; local: LocalValues }) {
-  const template = data.templates[0];
-  if (template) {
-    // 이번에는 1쪽만 칸 위치가 있다 (10의 10장). 나머지 칸은 2장 준비 카드로 옮겨 쓴다
+  if (data.templates.length > 0) {
+    // 공식 양식의 모든 쪽을 한 장씩 (신청서 1~3쪽 ...)
     return (
-      <div className="print-page">
-        <FormOverlay template={template} mode="print" page={1} localValues={local} />
-      </div>
+      <>
+        {data.templates.flatMap((template) =>
+          template.pageImages.map((_, i) => (
+            <div key={`${template.code}-${i}`} className="print-page">
+              <FormOverlay template={template} mode="print" page={i + 1} localValues={local} />
+            </div>
+          )),
+        )}
+      </>
     );
   }
   const v = (s?: string) => s?.trim() ?? '';
