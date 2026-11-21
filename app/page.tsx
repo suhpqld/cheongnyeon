@@ -48,20 +48,20 @@ export default function Home() {
   }
 
   return (
-    <AppShell back={null} showHome={false} todo={TODO} speakText={WELCOME} step={0}>
+    <AppShell back={null} showHome={false} todo={TODO} speakText={WELCOME} step={0} wide>
       <div className="grid gap-5">
         <section
           aria-labelledby="hero-title"
-          className="relative isolate min-h-[230px] overflow-hidden rounded-[20px] px-4 py-5 text-white shadow-[0_17px_36px_#1b315b2b]"
+          className="relative isolate min-h-[230px] overflow-hidden rounded-[20px] px-4 py-5 text-white shadow-[0_17px_36px_#1b315b2b] pc:min-h-[300px] pc:rounded-[28px] pc:px-10 pc:py-9"
           style={{ background: 'radial-gradient(ellipse at 81% 61%, #4272be 0%, #233f82 34%, #142657 69%, #0b193c 100%)' }}
         >
-          <div className="relative z-10 max-w-[62%]">
-            <h1 id="hero-title" className="text-[clamp(1.35rem,6.2vw,2rem)] leading-[1.18]">주민센터,<br />한 번에 끝내요</h1>
-            <p className="mt-3 text-[max(17px,0.85rem)] leading-relaxed text-[#e0ebff]">{DESCRIPTION}</p>
+          <div className="relative z-10 max-w-[62%] pc:max-w-[560px]">
+            <h1 id="hero-title" className="text-[clamp(1.35rem,6.2vw,2rem)] leading-[1.18] pc:text-[2.6rem]">주민센터,<br />한 번에 끝내요</h1>
+            <p className="mt-3 text-[max(17px,0.85rem)] leading-relaxed text-[#e0ebff] pc:mt-4 pc:max-w-[440px] pc:text-[1rem]">{DESCRIPTION}</p>
           </div>
           <div
             aria-hidden="true"
-            className="absolute bottom-[10%] right-0 h-[24%] w-[40%] rounded-[50%] border border-point"
+            className="absolute bottom-[10%] right-0 h-[24%] w-[40%] rounded-[50%] border border-point pc:right-[4%] pc:w-[35%]"
             style={{ transform: 'perspective(430px) rotateX(57deg)', background: 'radial-gradient(ellipse, #90c4fc99, #81a8ef50 62%, #5487cb55)' }}
           />
           <Image
@@ -71,7 +71,7 @@ export default function Home() {
             height={180}
             unoptimized
             priority
-            className="absolute bottom-[6%] right-[2%] h-[80%] w-[38%] object-contain drop-shadow-[0_17px_18px_rgba(6,13,37,0.35)]"
+            className="absolute bottom-[6%] right-[2%] h-[80%] w-[38%] object-contain drop-shadow-[0_17px_18px_rgba(6,13,37,0.35)] pc:right-[7%] pc:h-[90%] pc:w-[29%]"
           />
         </section>
 
@@ -87,14 +87,14 @@ export default function Home() {
             </div>
           )}
           {programs && (
-            <>
+            <div className="grid gap-3 pc:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] pc:items-start pc:gap-5">
               <ul className="grid gap-3">
                 {programs.filter((p) => p.status === 'available').map((p) => (
                   <li key={p.code}>
                     <button
                       type="button"
                       onClick={() => router.push('/p/' + encodeURIComponent(p.code))}
-                      className="flex min-h-20 w-full items-center gap-3 rounded-[20px] border border-primary bg-primary px-4 py-3 text-left text-white shadow-[0_4px_0_#07132e,0_14px_30px_#24388b30]"
+                      className="flex min-h-20 w-full items-center gap-3 rounded-[20px] border border-primary bg-primary px-4 py-3 text-left text-white shadow-[0_4px_0_#07132e,0_14px_30px_#24388b30] pc:min-h-32 pc:px-6"
                     >
                       <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-[12px] bg-white/15 text-[1.2rem]">▤</span>
                       <span className="grid min-w-0 flex-1 gap-1">
@@ -131,7 +131,7 @@ export default function Home() {
                   </ul>
                 </div>
               )}
-            </>
+            </div>
           )}
         </section>
 

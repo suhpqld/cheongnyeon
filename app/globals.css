@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* PC 화면 보기일 때만: pc:grid-cols-2 처럼 쓴다 (html.view-pc) */
+@custom-variant pc (&:where(.view-pc, .view-pc *));
+
 /* 색: 채희 시안(visit-prep-preview) 기준. 이름은 그대로 두고 값만 바꿈 */
 @theme {
   --color-bg: #f2f6ff;
