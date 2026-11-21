@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import PrintScreen from '@/components/card/PrintScreen';
+import PrintScreen from './PrintScreen';
 
 type Props = { params: Promise<{ id: string }> };
 
