@@ -39,6 +39,8 @@ export function validateAnswer(field: FormField, value: AnswerValue): boolean {
     case 'count': return typeof value === 'number' && Number.isInteger(value) && value >= (field.minValue ?? 0) && value <= (field.maxValue ?? Number.MAX_SAFE_INTEGER)
     case 'money': return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= (field.maxValue ?? Number.MAX_SAFE_INTEGER)
     case 'text': return typeof value === 'string' && value.trim().length >= 1 && value.trim().length <= 100
+    // group: 한 줄씩 배열. 화면이 아직 글자 칸이라 1~300자 글자도 받는다
+    case 'group': return Array.isArray(value) || (typeof value === 'string' && value.trim().length >= 1 && value.trim().length <= 300)
   }
 }
 

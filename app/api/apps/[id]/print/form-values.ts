@@ -1,5 +1,6 @@
 // 10 S5: 공식 양식 칸에 들어갈 값 (순수 함수, 서버와 브라우저가 같이 쓴다)
 // 규칙(10의 4장, 8장): 모르는 값과 대충 금액은 빈칸 + "확인 후 적기" / choice는 체크 위치로 / 금액은 숫자에 쉼표
+import { groupSummary } from '@/lib/format';
 import type { Answer, FormField } from '@/lib/types';
 
 export type LocalOnly = 'name' | 'rrn' | 'phone' | 'signature';
@@ -46,6 +47,7 @@ export function displayForForm(field: Pick<FormField, 'type' | 'options'>, answe
   if (!answer) return { text: '', needsCheck: true };
   const { value, isApproximate } = answer;
   if (value === 'unknown' || isApproximate) return { text: '', needsCheck: true };
+  if (Array.isArray(value)) return { text: groupSummary(value), needsCheck: false };
   switch (field.type) {
     case 'money':
       return { text: numberKo.format(Number(value)), needsCheck: false };
