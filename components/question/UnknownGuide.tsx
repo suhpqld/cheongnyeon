@@ -1,0 +1,5 @@
+'use client'
+
+export function UnknownGuide({ checkGuide, isMoney, onUnknown, onApproximate, onBack }: { checkGuide?: string | null; isMoney?: boolean; onUnknown: () => void; onApproximate?: () => void; onBack: () => void }) {
+  return <section className="grid gap-4 rounded-2xl border-2 border-orange-200 bg-white p-5"><p className="text-lg font-bold">지금 할 일: 확인하는 방법을 보고 골라 주세요</p><p className="text-2xl font-bold">괜찮아요. 이렇게 확인할 수 있어요.</p><p className="rounded-xl bg-orange-50 p-4 text-xl leading-relaxed">{checkGuide || '주민센터에서 같이 확인할 수 있어요.'}</p><button type="button" className="min-h-16 rounded-2xl bg-orange-700 text-xl font-bold text-white" onClick={onUnknown}>나중에 확인할게요</button>{isMoney && onApproximate && <button type="button" className="min-h-16 rounded-2xl border-2 border-orange-700 text-xl font-bold" onClick={onApproximate}>대충은 알아요</button>}<button type="button" className="min-h-16 rounded-2xl border-2 border-slate-500 text-xl font-bold" onClick={onBack}>지금 확인했어요</button></section>
+}
