@@ -1,0 +1,99 @@
+.canvas {
+  min-height: 100vh;
+  padding: 24px 16px 48px;
+  background: #eee9df;
+  color: #1f1a17;
+  font-family: Arial, "Noto Sans KR", sans-serif;
+}
+
+.versions {
+  width: min(100%, 760px);
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.versions span { margin-right: auto; font-weight: 700; }
+.versions a {
+  padding: 8px 12px;
+  border: 2px solid #1f1a17;
+  border-radius: 8px;
+  background: white;
+  color: #1f1a17;
+  text-decoration: none;
+}
+.versions a[aria-current="page"] { background: #1f1a17; color: white; }
+.versions a:focus-visible { outline: 3px solid #b4500f; outline-offset: 3px; }
+
+.paper {
+  position: relative;
+  width: min(100%, 760px);
+  min-height: 980px;
+  margin: 0 auto;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 8px 30px #1f1a1730;
+}
+.content { position: relative; z-index: 1; padding: 70px 65px 100px; }
+.watermark {
+  position: absolute;
+  top: 45%;
+  left: -2%;
+  z-index: 0;
+  transform: rotate(-28deg);
+  color: #9d341b;
+  opacity: .13;
+  font-size: clamp(72px, 13vw, 125px);
+  font-weight: 900;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.topline { border-top: 5px solid #1f1a17; padding-top: 15px; font-size: 15px; font-weight: 700; }
+.paper h1 { margin: 28px 0 32px; font-size: 31px; line-height: 1.42; text-align: center; letter-spacing: -.04em; }
+.recipient { padding: 13px 0; border-top: 1px solid #1f1a17; border-bottom: 1px solid #1f1a17; font-size: 19px; }
+.intro { margin: 35px 0 28px; font-size: 19px; line-height: 1.75; white-space: pre-line; }
+.documents { margin: 0 0 42px; padding-left: 32px; font-size: 19px; line-height: 1.7; }
+.documents li { padding: 8px 0; }
+.documentTable { width: 100%; margin: 25px 0 39px; border-collapse: collapse; font-size: 17px; line-height: 1.45; }
+.documentTable caption { margin-bottom: 10px; text-align: left; font-size: 19px; font-weight: 700; }
+.documentTable th, .documentTable td { border: 2px solid #1f1a17; padding: 11px 9px; text-align: left; vertical-align: top; }
+.documentTable th:first-child, .documentTable td:first-child { width: 53px; text-align: center; }
+.documentTable th:last-child, .documentTable td:last-child { width: 58px; }
+.documentTable th { background: #f1eee9; }
+.deadline { margin: 0; padding: 15px 18px; border: 3px solid #1f1a17; font-size: 23px; }
+.deadline strong { font-size: 27px; }
+.handwrittenDeadline { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 18px; border: 3px solid #1f1a17; }
+.deadlineLabel { font-size: 23px; font-weight: 700; }
+.handwrittenDeadline span:nth-child(2) { font-size: 59px; color: #123c85; line-height: 1; transform: rotate(-3deg); }
+.handwriting { font-family: "Nanum Pen Script", "Segoe Print", "Comic Sans MS", cursive; font-style: italic; }
+.scribble { position: absolute; left: 155px; bottom: 10px; width: 170px; border-bottom: 3px wavy #123c85; transform: rotate(-4deg); }
+.warning { margin: 22px 0 44px; font-size: 18px; line-height: 1.6; }
+.office { margin: 0; padding: 18px 0; border-top: 2px solid #1f1a17; font-size: 18px; line-height: 1.7; }
+.stamp { position: absolute; right: 76px; bottom: 130px; width: 90px; height: 90px; border: 5px solid #b92121; border-radius: 50%; display: grid; place-items: center; color: #b92121; font-size: 27px; font-weight: 800; transform: rotate(-12deg); opacity: .85; }
+.footer { position: absolute; left: 65px; bottom: 34px; right: 65px; margin: 0; border-top: 1px solid #777; padding-top: 10px; font-size: 14px; }
+
+@media (max-width: 600px) {
+  .paper { min-height: 800px; }
+  .content { padding: 35px 26px 90px; }
+  .paper h1 { font-size: 24px; }
+  .intro, .documents, .recipient { font-size: 16px; }
+  .documentTable { font-size: 14px; }
+  .deadline, .deadlineLabel { font-size: 18px; }
+  .deadline strong { font-size: 21px; }
+  .handwrittenDeadline span:nth-child(2) { font-size: 45px; }
+  .warning, .office { font-size: 15px; }
+  .stamp { right: 25px; bottom: 90px; width: 65px; height: 65px; font-size: 19px; }
+  .footer { left: 26px; right: 26px; font-size: 11px; }
+}
+
+@media print {
+  .canvas { padding: 0; background: white; }
+  .versions { display: none; }
+  .paper { width: 210mm; min-height: 297mm; box-shadow: none; break-after: page; }
+  .content { padding: 20mm 17mm 28mm; }
+  .footer { left: 17mm; right: 17mm; bottom: 13mm; }
+  @page { size: A4; margin: 0; }
+}
