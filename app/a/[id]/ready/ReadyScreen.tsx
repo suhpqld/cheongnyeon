@@ -71,7 +71,7 @@ export default function ReadyScreen({ appId }: { appId: string }) {
   const resumeCode = typeof session === 'object' ? session.resumeCode : null;
   if (!data || !tab) {
     return (
-      <AppShell back={{ href: base + '/fill' }} todo={TODO} resumeCode={resumeCode}>
+      <AppShell back={{ href: base + '/fill' }} todo={TODO} resumeCode={resumeCode} step={3}>
         {loadError ? (
           <div className="grid gap-3">
             <p role="alert" className="font-bold text-warn">{loadError}</p>
@@ -148,7 +148,7 @@ export default function ReadyScreen({ appId }: { appId: string }) {
   const done = remaining.count === 0;
 
   return (
-    <AppShell back={{ href: base + '/fill' }} todo={TODO} speakText={remainingSpeakText(remaining)} resumeCode={resumeCode}>
+    <AppShell back={{ href: base + '/fill' }} todo={TODO} speakText={remainingSpeakText(remaining)} resumeCode={resumeCode} step={3}>
       <div className="grid gap-4 pb-4">
         <StageTracker
           compact
@@ -161,18 +161,18 @@ export default function ReadyScreen({ appId }: { appId: string }) {
         {done ? (
           <div
             role="status"
-            className="flex flex-col items-center gap-2 rounded-2xl border-[3px] border-ok bg-[#E8F5EC] p-5 text-center"
+            className="panel flex flex-col items-center gap-2 border-ok bg-ok-soft p-5 text-center"
           >
             <Boknyang mood="happy" size="lg" />
             <p className="text-[1.5rem] font-bold leading-snug text-ok">{READY_DONE_TEXT}</p>
           </div>
         ) : (
-          <div role="status" className="rounded-2xl border-[3px] border-primary bg-primary-soft p-5 text-center">
+          <div role="status" className="panel p-5 text-center">
             <h1 className="text-[1.4rem] font-bold leading-snug">
               주민센터에 한 번에 내기까지
-              <span className="mt-1 block text-[2.4rem] leading-tight text-primary">남은 것 {remaining.count}개</span>
+              <span className="mt-1 block text-[2.4rem] leading-tight text-primary-dark">남은 것 {remaining.count}개</span>
             </h1>
-            <p className="mt-2 text-[0.95rem]">
+            <p className="mt-2 text-[0.95rem] text-muted">
               {[
                 remaining.docs && `📋 챙길 서류 ${remaining.docs}개`,
                 remaining.checks && `⚠ 확인할 것 ${remaining.checks}개`,
@@ -184,12 +184,12 @@ export default function ReadyScreen({ appId }: { appId: string }) {
           </div>
         )}
 
-        <p className="text-[0.9rem]">{officeName(data.place)}에 낼 것</p>
+        <p className="text-[0.9rem] text-muted">📍 {officeName(data.place)}에 낼 것</p>
 
         {sup && (
           <Link
             href={`${base}/extra/${encodeURIComponent(sup.id)}`}
-            className="block rounded-2xl border-[3px] border-warn bg-white p-4 font-bold text-warn"
+            className="notice notice-warn block font-bold"
           >
             📮 추가로 챙길 서류가 있어요.
           </Link>

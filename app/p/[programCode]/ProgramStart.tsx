@@ -93,10 +93,11 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
         todo="이어서 하기 번호를 적고 시작해 주세요"
         speakText={`이어서 하기 번호예요. ${[...session.resumeCode].join(' ')}. 종이에 적어 두세요.`}
         resumeCode={session.resumeCode}
+        step={1}
       >
         <div className="grid gap-4 text-center">
           <h1>이어서 하기 번호예요</h1>
-          <p className="rounded-2xl border-[3px] border-primary bg-white py-5 font-mono text-5xl font-black tracking-widest text-primary">
+          <p className="panel py-5 font-mono text-5xl font-black tracking-widest text-primary">
             {formatCode(session.resumeCode)}
           </p>
           <p className="leading-relaxed">언제 그만둬도 이 번호로 이어서 할 수 있어요. 종이에 적어 두세요.</p>
@@ -124,7 +125,7 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
 
   if (!info) {
     return (
-      <AppShell back={{ href: '/' }} todo={TODO}>
+      <AppShell back={{ href: '/' }} todo={TODO} step={1}>
         <Loading text="신청서 양식을 불러오고 있어요" />
       </AppShell>
     );
@@ -137,21 +138,22 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
     <AppShell
       back={{ href: '/' }}
       todo={TODO}
+      step={1}
       speakText={`${info.program.name} 신청서를 불러왔어요. 누가 쓰고 있는지, 어떻게 채울지 골라 주세요.`}
     >
       <div className="grid gap-5 pb-4">
         <div>
-          <h1>{info.program.name}</h1>
-          <p>신청서 양식을 불러왔어요.</p>
+          <h1>작성할 양식을 확인해요</h1>
+          <p className="mt-1 text-muted">{info.program.name} 신청서 양식을 불러왔어요.</p>
         </div>
 
-        <section className="grid gap-3" aria-labelledby="forms-title">
+        <section className="panel grid gap-3" aria-labelledby="forms-title">
           <h2 id="forms-title">📄 불러온 서식 {forms.length}개</h2>
           <ul className="grid gap-3">
             {forms.map((f) => (
-              <li key={f.code} className="rounded-2xl border-2 border-line bg-white p-4">
+              <li key={f.code} className="rounded-2xl border border-hair bg-[#f8faff] p-4">
                 <p className="text-[1.05rem] font-bold leading-snug">📄 {f.name}</p>
-                {f.sub && <p className="text-[max(18px,0.85rem)]">{f.sub}</p>}
+                {f.sub && <p className="text-[max(18px,0.85rem)] text-muted">{f.sub}</p>}
                 {f.ready ? (
                   <>
                     <div className="mt-3 grid grid-cols-3 gap-2">
@@ -169,10 +171,10 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
                         </figure>
                       ))}
                     </div>
-                    <p className="mt-2 text-[max(18px,0.9rem)]">✏️ 칸 {f.slotCount}개를 답에 맞춰 미리 채워 드려요.</p>
+                    <p className="mt-2 text-[max(18px,0.9rem)]"><span className="marker marker-good mr-1">불러옴</span>칸 {f.slotCount}개를 답에 맞춰 미리 채워 드려요.</p>
                   </>
                 ) : (
-                  <p className="mt-2 rounded-xl bg-primary-soft p-3 text-[max(18px,0.9rem)] leading-relaxed">⏳ {PREPARING}</p>
+                  <p className="notice mt-2 text-[max(18px,0.9rem)] leading-relaxed"><span className="marker marker-neutral mr-1">준비 중</span>{PREPARING}</p>
                 )}
               </li>
             ))}
@@ -182,7 +184,7 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
           </p>
         </section>
 
-        <section className="grid gap-3" aria-labelledby="helper-title">
+        <section className="panel grid gap-3" aria-labelledby="helper-title">
           <h2 id="helper-title">누가 쓰고 있나요?</h2>
           {HELPERS.map((h) => (
             <BigButton
@@ -197,13 +199,13 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
             </BigButton>
           ))}
           {helperMode && helperMode !== 'self' && (
-            <p className="rounded-xl bg-primary-soft p-3 leading-relaxed">
+            <p className="notice leading-relaxed">
               🗣 질문이 &quot;신청하시는 분은...&quot;으로 나와요. 신청하시는 분께 읽어 드리고 같이 대답해 주세요.
             </p>
           )}
         </section>
 
-        <section className="grid gap-3" aria-labelledby="method-title">
+        <section className="panel grid gap-3" aria-labelledby="method-title">
           <h2 id="method-title">채우는 방법 고르기</h2>
           {METHODS.map((m) => (
             <BigButton
@@ -217,7 +219,7 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
               {m.label}
             </BigButton>
           ))}
-          <p className="text-[max(18px,0.9rem)]">두 방법 모두 같은 답으로 저장돼요. 채우는 중에 바꿀 수 있어요.</p>
+          <p className="text-[max(18px,0.9rem)] text-muted">두 방법 모두 같은 답으로 저장돼요. 채우는 중에 바꿀 수 있어요.</p>
         </section>
 
         <p>🔒 이름과 주민등록번호는 저장하지 않아요. 출력할 때만 적어요.</p>

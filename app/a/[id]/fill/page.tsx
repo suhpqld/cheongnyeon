@@ -142,7 +142,7 @@ function FillQuestionScreen() {
     else router.push(`/a/${encodeURIComponent(id)}/ready`);
   };
 
-  return <AppShell back={{ href: backField ? `/a/${encodeURIComponent(id)}/fill` : `/a/${encodeURIComponent(id)}` }} resumeCode={app.resumeCode} todo="신청서 칸을 채워 주세요" speakText={state === 'question' || state === 'approximate' ? readText : null}>
+  return <AppShell back={{ href: backField ? `/a/${encodeURIComponent(id)}/fill` : `/a/${encodeURIComponent(id)}` }} resumeCode={app.resumeCode} step={2} todo="신청서 칸을 채워 주세요" speakText={state === 'question' || state === 'approximate' ? readText : null}>
     <div className="grid gap-3">
       <ProgressBar {...fieldProgress} />
       <div className="flex items-center justify-between rounded-xl bg-primary-soft px-3 py-2 text-sm font-bold">
