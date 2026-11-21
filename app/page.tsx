@@ -1,81 +1,125 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import type { ProgramListItem } from '@/app/api/programs/route';
 import { AppShell } from '@/components/ui/AppShell';
 import { BigButton } from '@/components/ui/BigButton';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Disclaimer } from '@/components/ui/Disclaimer';
-import { SpeechBubble } from '@/components/ui/SpeechBubble';
-import { ApiError, apiFetch } from '@/lib/client/api';
-import { clearSession, getSession } from '@/lib/client/session';
+import { Loading } from '@/components/ui/Loading';
+import { apiFetch } from '@/lib/client/api';
+import { PROGRAM_CODE } from '@/lib/constants';
 import { useSettings } from '@/lib/client/settings';
 import { speak, stopSpeaking, useSpeaking } from '@/lib/client/tts';
-import type { Progress } from '@/lib/rules/progress';
 
-const welcome = '안녕하세요, 복냥이예요. 복지 신청서를 쓰려면 신청서 쓰기를, 주민센터에서 서류를 더 내라는 종이를 받으셨으면 서류를 더 내래요를 눌러 주세요.';
-const instructions = '복냥이는 복지 신청서를 같이 쓰는 도우미예요. 가족이나 배움터 선생님이 옆에서 같이 해도 돼요. 신청서를 쓰려면 신청서 쓰기를 누르세요. 질문이 하나씩 나오면 말로 대답하거나 버튼을 누르면 돼요. 주민센터에서 서류를 더 내라는 종이를 받았다면 서류를 더 내래요를 누르고 그 종이를 사진으로 찍어 주세요. 언제 그만둬도 여덟 자리 번호로 이어서 할 수 있어요.';
+const TODO = '신청하고 싶은 복지를 골라 주세요';
+const DESCRIPTION =
+  '신청서를 미리 채우고 필요한 서류를 빠짐없이 챙겨 드려요. 준비가 끝나면 출력해서 주민센터에 한 번만 가면 돼요.';
+const WELCOME = `안녕하세요, 복냥이예요. 주민센터, 한 번에 끝내요. ${DESCRIPTION} ${TODO}.`;
+
+/** 마지막 한글 글자에 받침이 있으면 "은", 없으면 "는" */
+function topic(name: string): string {
+  const last = [...name].reverse().find((c) => c >= '가' && c <= '힣');
+  if (!last) return name + '은';
+  return name + ((last.charCodeAt(0) - 0xac00) % 28 ? '은' : '는');
+}
 
 export default function Home() {
-  const [application, setApplication] = useState<Progress | null>(null);
+  const router = useRouter();
+  const [programs, setPrograms] = useState<ProgramListItem[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [soon, setSoon] = useState<ProgramListItem | null>(null);
   const { sound, fontSize, setSound, setFontSize } = useSettings();
   const reading = useSpeaking();
 
   useEffect(() => {
-    const session = getSession();
-    if (!session) return;
-    let active = true;
-    apiFetch<Progress>('/api/apps/' + encodeURIComponent(session.appId) + '/progress')
-      .then(progress => {
-        if (active && getSession()?.token === session.token) setApplication(progress);
-      })
-      .catch(error => {
-        if (active && error instanceof ApiError && [401, 404].includes(error.status) &&
-          getSession()?.token === session.token) clearSession();
-      });
-    return () => { active = false; };
+    let alive = true;
+    apiFetch<{ programs: ProgramListItem[] }>('/api/programs')
+      .then((r) => alive && setPrograms(r.programs))
+      .catch(() => alive && setLoadError(true));
+    return () => { alive = false; };
   }, []);
+
+  const available = programs?.find((p) => p.status === 'available') ?? null;
+  const availableCode = available?.code ?? PROGRAM_CODE;
 
   function toggleSound() {
     if (sound === 'on') stopSpeaking();
     setSound(sound === 'on' ? 'off' : 'on');
   }
 
-  function readInstructions() {
-    if (reading) stopSpeaking();
-    else {
-      if (sound === 'off') setSound('on');
-      speak(instructions);
-    }
+  function openSoon(p: ProgramListItem) {
+    setSoon(p);
+    speak(soonText(p));
   }
 
   return (
-    <AppShell back={null} showHome={false} todo="무엇을 하러 오셨는지 골라 주세요" speakText={welcome}>
+    <AppShell back={null} showHome={false} todo={TODO} speakText={WELCOME}>
       <div className="grid gap-5">
-        <div className="grid justify-items-center gap-3 rounded-3xl border border-primary/15 bg-white px-4 py-3 text-center shadow-sm">
-          <div className="w-full max-w-[120px] min-[430px]:max-w-[180px] [&_img]:h-auto [&_img]:w-full">
-            <Image src="/boknyang/hero.png" alt="" width={180} height={180} unoptimized className="object-contain" />
+        <div className="grid justify-items-center gap-3 rounded-3xl border border-primary/15 bg-white px-4 py-4 text-center shadow-sm">
+          <div className="w-full max-w-[140px] min-[430px]:max-w-[180px] [&_img]:h-auto [&_img]:w-full">
+            <Image src="/boknyang/hero.png" alt="" width={180} height={180} unoptimized priority className="object-contain" />
           </div>
-          <h1>복냥이</h1>
-          <p className="font-bold">어려운 복지 서류, 이제 나한테 말하면 된다냥</p>
-          <SpeechBubble>안녕하세요, 복냥이예요! 복지 서류, 저한테 말하면 같이 채워 드릴게요.</SpeechBubble>
+          <h1>주민센터, 한 번에 끝내요</h1>
+          <p className="leading-relaxed">{DESCRIPTION}</p>
         </div>
-        <div className="grid gap-3" aria-label="신청 시작과 이어서 하기">
-          {application && (
-            <BigButton href={'/a/' + encodeURIComponent(application.app.id)} icon="▶"
-              sub={application.nextActions[0]?.title}>
-              하던 신청 이어서 하기
-            </BigButton>
+
+        <section className="grid gap-3" aria-labelledby="program-title">
+          <h2 id="program-title">신청하고 싶은 복지를 골라 주세요</h2>
+          {!programs && !loadError && <Loading text="복지 목록을 불러오고 있어요" />}
+          {loadError && (
+            <div className="grid gap-3">
+              <p role="alert" className="font-bold text-warn">복지 목록을 불러오지 못했어요.</p>
+              <BigButton onClick={() => router.push('/p/' + encodeURIComponent(PROGRAM_CODE))}>
+                서울형 기초보장 준비하기
+              </BigButton>
+            </div>
           )}
-          <BigButton href="/intro" icon="📝">신청서 쓰기</BigButton>
-          <BigButton href="/supplement" icon="📮" variant="secondary" sub="주민센터에서 추가 서류 요청을 받았어요">
-            서류를 더 내래요
+          {programs && (
+            <ul className="grid gap-3">
+              {programs.map((p) => (
+                <li key={p.code}>
+                  {p.status === 'available' ? (
+                    <button
+                      type="button"
+                      onClick={() => router.push('/p/' + encodeURIComponent(p.code))}
+                      className="flex min-h-20 w-full flex-col items-start gap-1 rounded-2xl border-[3px] border-primary bg-primary px-4 py-3 text-left text-white"
+                    >
+                      <span className="rounded-full bg-white px-3 py-0.5 text-[max(18px,0.85rem)] font-bold text-primary">
+                        ✅ 신청 준비 가능
+                      </span>
+                      <span className="text-[1.15rem] font-bold leading-snug">{p.name}</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => openSoon(p)}
+                      className="flex min-h-20 w-full flex-col items-start gap-1 rounded-2xl border-2 border-[#8a93a3] bg-[#e6e8ec] px-4 py-3 text-left text-ink"
+                    >
+                      <span className="rounded-full border-2 border-[#5b6472] bg-white px-3 py-0.5 text-[max(18px,0.85rem)] font-bold text-[#3d4552]">
+                        ⏳ 준비 중
+                      </span>
+                      <span className="text-[1.05rem] font-bold leading-snug">{p.name}</span>
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <div className="grid gap-3 min-[360px]:grid-cols-2" aria-label="이어서 하기와 추가 서류">
+          <BigButton href="/resume" icon="🔢" variant="secondary" sub="8자리 번호">
+            준비하던 것 이어서 하기
           </BigButton>
-          <BigButton href="/resume" icon="🔢" variant="secondary">번호로 이어서 하기</BigButton>
+          <BigButton href="/supplement" icon="📮" variant="secondary">
+            주민센터에서 서류를 더 내래요
+          </BigButton>
         </div>
+
         <div className="grid gap-3" aria-label="읽어 주기와 글씨 설정">
-          <BigButton variant="secondary" onClick={readInstructions}>
-            {reading ? '■ 그만 듣기' : '🔊 사용법 듣기 (30초)'}
-          </BigButton>
           <div className="grid gap-3 min-[360px]:grid-cols-2">
             <BigButton variant="secondary" onClick={toggleSound}>
               소리 {sound === 'on' ? '켜짐' : '꺼짐'}
@@ -84,12 +128,33 @@ export default function Home() {
               글씨 {fontSize === 'large' ? '크게' : '보통'}
             </BigButton>
           </div>
+          <BigButton variant="secondary" onClick={() => (reading ? stopSpeaking() : speak(WELCOME))}>
+            {reading ? '■ 그만 듣기' : '🔊 다시 듣기'}
+          </BigButton>
         </div>
+
         <div className="text-[max(18px,0.9rem)]">
-          <p>이름과 주민등록번호는 저장하지 않아요.</p>
+          <p className="font-bold">🔒 이름과 주민등록번호는 저장하지 않아요.</p>
           <Disclaimer />
         </div>
       </div>
+
+      <ConfirmModal
+        open={soon !== null}
+        title="아직 준비 중이에요"
+        body={<p className="leading-relaxed">{soon ? soonText(soon) : ''}</p>}
+        confirmLabel="서울형 기초보장 준비하기"
+        cancelLabel="닫기"
+        onConfirm={() => {
+          setSoon(null);
+          router.push('/p/' + encodeURIComponent(availableCode));
+        }}
+        onCancel={() => setSoon(null)}
+      />
     </AppShell>
   );
+}
+
+function soonText(p: ProgramListItem): string {
+  return `${topic(p.name)} 아직 준비 중이에요. 지금은 서울형 기초보장제도만 준비해 드릴 수 있어요. 같은 신청서를 쓰는 제도부터 차례로 추가할 예정이에요.`;
 }
