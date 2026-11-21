@@ -4,10 +4,23 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppShell } from '@/components/ui/AppShell';
 import { BigButton } from '@/components/ui/BigButton';
+import { apiFetch } from '@/lib/client/api';
 import { saveSession } from '@/lib/client/session';
+import type { Progress } from '@/lib/rules/progress';
 import { RESUME_CODE_LENGTH, RESUME_LOCK_MINUTES } from '@/lib/constants';
 import { formatCode } from '@/lib/format';
 import type { Session } from '@/lib/types';
+
+/** 남은 것부터: 아직 채울 칸이 있으면 S3, 다 채웠으면 S4. 못 알아내면 S3 */
+async function nextPath(appId: string): Promise<string> {
+  const base = '/a/' + encodeURIComponent(appId);
+  try {
+    const progress = await apiFetch<Progress>(base.replace('/a/', '/api/apps/') + '/progress');
+    return progress.remainingQuestions > 0 ? base + '/fill' : base + '/ready';
+  } catch {
+    return base + '/fill';
+  }
+}
 
 const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '지우기', '0'];
 
@@ -49,7 +62,7 @@ export default function Resume() {
       if (response.ok) {
         const session: Session = data;
         saveSession(session);
-        router.replace('/a/' + encodeURIComponent(session.appId));
+        router.replace(await nextPath(session.appId));
         opening = true;
         return;
       }
