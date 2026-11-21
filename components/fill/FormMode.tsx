@@ -3,7 +3,6 @@
 import { useId, useState } from 'react';
 import { FormOverlay, type FormSlot } from '@/components/form/FormOverlay';
 import { BigButton } from '@/components/ui/BigButton';
-import { MicButton } from '@/components/voice/MicButton';
 import { displayAnswer, formatWon } from '@/lib/format';
 import { normalizeDistrict, questionText, SEOUL_DISTRICTS, validateAnswer, visibleFields } from '@/lib/rules/form';
 import type { Answer, AnswerMap, AnswerValue, ExtractResult, FormField, HelperMode } from '@/lib/types';
@@ -163,10 +162,6 @@ function FieldEditor({ appId, helperMode, field, answer, onSave }: {
           inputMode={field.type === 'money' || field.type === 'count' ? 'numeric' : 'text'}
           aria-describedby={field.helpEasy ? `${id}-help` : undefined} onChange={(event) => updateInput(event.target.value)} />
       )}
-      <MicButton appId={appId} helperMode={helperMode} field={field} otherFields={[]}
-        clarify={voice?.result.clarifyQuestion && voice.result.clarifyOptions?.length
-          ? { question: voice.result.clarifyQuestion, options: voice.result.clarifyOptions } : null}
-        disabled={saving} onResult={onVoiceResult} />
       {field.type === 'money' && typeof value === 'number' && (
         <label className="flex min-h-16 items-center gap-3">
           <input type="checkbox" className="size-6" checked={approximate} disabled={saving}

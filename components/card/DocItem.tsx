@@ -12,7 +12,7 @@ interface DocItemProps {
 }
 
 export default function DocItem({ item, onToggle, onSpeak, busy }: DocItemProps) {
-  const speak = () => onSpeak?.(`${item.docName}. ${item.easyExplain ?? ''}`);
+  void onSpeak;
   return (
     <li
       className={
@@ -20,11 +20,7 @@ export default function DocItem({ item, onToggle, onSpeak, busy }: DocItemProps)
         (item.isDone ? 'border-[3px] border-ok' : 'border-2 border-ink')
       }
     >
-      <button
-        type="button"
-        onClick={speak}
-        className="block w-full text-left focus-visible:outline focus-visible:outline-4 focus-visible:outline-ink"
-      >
+      <div className="block w-full text-left">
         <span className="block text-[1.1rem] font-bold leading-snug">{item.docName}</span>
         {item.easyExplain && <span className="mt-1 block text-[0.95rem] leading-relaxed">{item.easyExplain}</span>}
         <span className="mt-2 block text-[0.9rem] leading-relaxed">
@@ -39,7 +35,7 @@ export default function DocItem({ item, onToggle, onSpeak, busy }: DocItemProps)
         {item.source === 'base' && item.alsoRequested && (
           <span className="mt-2 block text-[0.9rem] font-bold text-warn">📮 추가 요청에도 있어요</span>
         )}
-      </button>
+      </div>
       <button
         type="button"
         aria-pressed={item.isDone}

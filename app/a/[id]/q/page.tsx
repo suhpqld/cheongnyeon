@@ -11,7 +11,6 @@ import { AppShell } from '@/components/ui/AppShell';
 import { BigButton } from '@/components/ui/BigButton';
 import { Boknyang } from '@/components/ui/Boknyang';
 import { Loading } from '@/components/ui/Loading';
-import { MicButton } from '@/components/voice/MicButton';
 import { apiFetch, ApiError } from '@/lib/client/api';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { displayAnswer, formatWon } from '@/lib/format';
@@ -144,7 +143,6 @@ function QuestionScreen() {
         <h1>{questionText(activeField, helperMode)}</h1>
         {activeField.helpEasy && <p>{activeField.helpEasy}</p>}
         <AnswerArea field={activeField} value={currentAnswer?.value} onAnswer={(value) => selectButton(value, state === 'approximate')} />
-        <MicButton appId={id} helperMode={helperMode} field={activeField} otherFields={activeForm.fields.filter((item) => item.key !== activeField.key)} clarify={null} onResult={onVoiceResult} />
         {activeField.allowUnknown && state === 'question' && <BigButton variant="secondary" onClick={() => setState('unknown')}>잘 모르겠어요</BigButton>}
         {error && <p role="alert" className="text-warn">{error}</p>}
       </>}

@@ -78,7 +78,6 @@ function ReviewScreen() {
     <div className="grid gap-4">
       <h1>신청서에 이렇게 적을게요</h1>
       {needed.length > 0 && <div className="rounded-xl border-2 border-yellow-600 bg-yellow-50 p-4 font-bold">⚠ 확인이 필요한 답이 {needed.length}개 있어요. 주민센터에 가기 전에 확인하면 좋아요.</div>}
-      <BigButton variant="secondary" onClick={readAll}>{reading ? '■ 멈추기' : '🔊 전체 읽어 주기'}</BigButton>
       {grouped.map(({ section, fields: sectionFields }) => <section key={section} className="grid gap-2"><h2>{section}</h2>{sectionFields.map((field) => <ReviewRow key={field.key} label={field.label} value={displayAnswer(field, activeForm.answers[field.key])} needsCheck={needed.some((item) => item.key === field.key)} onEdit={() => router.push(`/a/${encodeURIComponent(id)}/q?field=${encodeURIComponent(field.key)}&from=review`)} />)}</section>)}
       <BigButton onClick={next}>{missing ? '이것만 더 대답해 주세요' : '맞아요, 다음으로'}</BigButton>
       <Disclaimer />

@@ -3,8 +3,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
-import { useSettings } from '@/lib/client/settings';
-import { speak, stopSpeaking, useAutoSpeak, useSpeaking } from '@/lib/client/tts';
 import { formatCode } from '@/lib/format';
 import { ConfirmModal } from './ConfirmModal';
 import { StepBar } from './StepBar';
@@ -14,6 +12,7 @@ interface AppShellProps {
   back?: { href: string } | { onClick: () => void } | null;
   showHome?: boolean;
   todo?: string | null;
+  /** 예전 읽어 주기용. 음성 기능을 뺐으므로 받기만 하고 쓰지 않는다 */
   speakText?: string | null;
   resumeCode?: string | null;
   plain?: boolean;
@@ -23,14 +22,10 @@ interface AppShellProps {
 
 const controlStyle = 'flex min-h-12 items-center justify-center rounded-xl px-2 text-center text-[max(16px,0.8rem)] font-bold text-ink';
 const toolStyle = controlStyle + ' border border-hair bg-white';
-const digits = ['공', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
 
-export function AppShell({ children, back, showHome = true, todo, speakText = null, resumeCode, plain, step }: AppShellProps) {
+export function AppShell({ children, back, showHome = true, todo, resumeCode, plain, step }: AppShellProps) {
   const router = useRouter();
   const [confirmHome, setConfirmHome] = useState(false);
-  const { sound } = useSettings();
-  const speaking = useSpeaking();
-  useAutoSpeak(speakText);
 
   return <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col px-3">
     {!plain && <>
@@ -40,11 +35,6 @@ export function AppShell({ children, back, showHome = true, todo, speakText = nu
               <Brand />
             </button>
           : <div className="flex min-h-12 items-center gap-2"><Brand /></div>}
-        {speakText && <button type="button" className={toolStyle}
-          disabled={sound === 'off' && !speaking}
-          onClick={() => speaking ? stopSpeaking() : speak(speakText)}>
-          {speaking ? '■ 그만 듣기' : '🔊 다시 듣기'}
-        </button>}
       </header>
       {back && <div className="pt-1">{'href' in back
         ? <Link href={back.href} className={controlStyle + ' inline-flex text-primary-dark underline underline-offset-4'}>← 뒤로</Link>
@@ -53,14 +43,11 @@ export function AppShell({ children, back, showHome = true, todo, speakText = nu
       {todo && <p className="notice mt-1 font-bold"><span className="text-primary-dark">지금 할 일</span> · {todo}</p>}
       <ConfirmModal open={confirmHome} title="처음 화면으로 갈까요?" body="쓴 내용은 저장돼 있어요."
         confirmLabel="네, 갈게요" cancelLabel="아니요" onCancel={() => setConfirmHome(false)}
-        onConfirm={() => { setConfirmHome(false); stopSpeaking(); router.push('/'); }} />
+        onConfirm={() => { setConfirmHome(false); router.push('/'); }} />
     </>}
     <main className="flex-1 py-3">{children}</main>
     {!plain && resumeCode && <footer className="pb-2 text-center">
-      <button type="button" className={toolStyle + ' w-full'}
-        onClick={() => speak([...resumeCode].map(digit => digits[Number(digit)]).join('. '))}>
-        이어서 하기 번호 {formatCode(resumeCode)}
-      </button>
+      <p className={toolStyle + ' w-full'}>이어서 하기 번호 {formatCode(resumeCode)}</p>
     </footer>}
   </div>;
 }
