@@ -20,8 +20,23 @@ const ptToCqw = (pt: number) => `${(pt / 595.28) * 100}cqw`;
 
 function slotText(slot: FormSlotView, local: LocalValues): string {
   if (slot.localOnly === 'signature') return '';
+  if (slot.localKey) {
+    const v = local[slot.localKey]?.trim() ?? '';
+    if (!v && slot.localKey === 'signer.name') return local['applicant.name']?.trim() ?? '';
+    return v;
+  }
   if (slot.localOnly) return local[slot.localOnly]?.trim() ?? '';
   return slot.value.text;
+}
+
+/** 글이 칸보다 길면 글자를 줄인다 (칸 너비 w는 그림 너비 대비 퍼센트 = cqw) */
+function fitFont(slot: FormSlotView, text: string): string {
+  const base = (slot.fontPt / 595.28) * 100;
+  if (!text) return `${base}cqw`;
+  const units = [...text].reduce((n, ch) => n + (/[가-힣]/.test(ch) ? 1 : 0.58), 0);
+  const maxByWidth = ((slot.w * 0.92) / Math.max(units, 1));
+  const maxByHeight = slot.h * (1753 / 1240) * 0.8;
+  return `${Math.max(Math.min(base, maxByWidth, maxByHeight), 0.9)}cqw`;
 }
 
 export default function FormOverlay({ template, mode, page = 1, localValues = {}, onSlotClick }: FormOverlayProps) {
@@ -42,6 +57,7 @@ export default function FormOverlay({ template, mode, page = 1, localValues = {}
           fontSize: ptToCqw(slot.fontPt),
         };
         const text = slotText(slot, localValues);
+        if (slot.render === 'text') style.fontSize = fitFont(slot, text);
         const content =
           slot.render === 'check' ? (
             slot.value.checked ? <span className="font-bold">✓</span> : null
@@ -49,14 +65,14 @@ export default function FormOverlay({ template, mode, page = 1, localValues = {}
             // 서명 칸은 비워 둔다. 안내는 화면에서만 보이고 인쇄에는 안 나온다
             <span className="text-[0.7em] text-[#666] print:hidden">주민센터에서 직접 서명해요</span>
           ) : (
-            <span className="truncate">{text}</span>
+            <span className="whitespace-nowrap">{text}</span>
           );
         const mark = slot.value.needsCheck && !text && (
           <span className="rounded-sm border border-dashed border-black px-[0.2em] text-[0.75em] leading-none">{CHECK_LATER}</span>
         );
         const cls =
           'absolute flex items-center overflow-hidden leading-none ' + (slot.render === 'check' ? 'justify-center' : 'px-[0.3em]');
-        if (mode === 'edit' && onSlotClick && !slot.localOnly) {
+        if (mode === 'edit' && onSlotClick && !slot.localOnly && !slot.localKey) {
           return (
             <button key={slot.id} type="button" style={style} className={cls + ' bg-primary-soft/40 text-left'} onClick={() => onSlotClick(slot)}>
               {content}
