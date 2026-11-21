@@ -37,7 +37,7 @@
 
 **2단계. 비밀 확인**
 - `.env`, `.env.local` 같은 파일은 절대 add하지 않는다. (`.env.example`만 괜찮다)
-- 올릴 파일의 `git diff`에 `sk-or-`, `sb_secret_`, `service_role`, `eyJhbGci`로 시작하는 긴 값이 있으면 **멈추고** 사람에게 알린다.
+- 올릴 파일의 `git diff`에 `sk-ant-`, `sb_secret_`, `service_role`, `eyJhbGci`로 시작하는 긴 값이 있으면 **멈추고** 사람에게 알린다.
 
 **3단계. build 확인**
 - `npm run build`
