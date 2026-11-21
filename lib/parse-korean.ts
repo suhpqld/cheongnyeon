@@ -218,5 +218,8 @@ export function localExtract(field: LocalField, text: string): ExtractResult {
       const v = cleanText(field, t);
       return v ? result(v, v) : result(null, t);
     }
+    // group은 여러 칸을 한 화면에서 받아서 말 한마디로 직접 읽지 않는다
+    case 'group':
+      return result(null, t);
   }
 }

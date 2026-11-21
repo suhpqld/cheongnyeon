@@ -2,10 +2,10 @@
 
 export type HelperMode = 'self' | 'family' | 'helper';
 export type AppStatus = 'drafting' | 'preparing' | 'submitted' | 'supplementing';
-export type FieldType = 'yes_no' | 'choice' | 'district' | 'count' | 'money' | 'text';
+export type FieldType = 'yes_no' | 'choice' | 'district' | 'count' | 'money' | 'text' | 'group';
 export type PlaceGroup = 'home' | 'onsite' | 'bank' | 'work' | 'tax' | 'gov24';
 export type InputMethod = 'voice' | 'button' | 'text' | 'unknown';
-export type AnswerValue = boolean | number | string; // 모름은 문자열 'unknown'
+export type AnswerValue = boolean | number | string | Record<string, unknown>[]; // 모름은 문자열 'unknown', group은 한 줄씩 배열
 export type PrecheckResult = 'yes' | 'no' | 'unknown';
 
 export interface Condition {

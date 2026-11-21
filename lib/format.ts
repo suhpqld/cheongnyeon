@@ -13,10 +13,24 @@ export function formatWon(n: number): string {
   return (n % 10_000 ? '약 ' : '') + (n < 0 ? '-' : '') + parts.join(' ') + ' 원';
 }
 
+/** group 답(한 줄씩 배열)을 짧게: relation을 이어서 "어머니, 아버지", 셋 이상이면 "어머니, 아버지 외 1명" */
+export function groupSummary(rows: Record<string, unknown>[]): string {
+  const names = rows.map((row) => {
+    const relation = row.relation;
+    if (typeof relation === 'string' && relation.trim()) return relation.trim();
+    const first = Object.values(row).find((v) => typeof v === 'string' && v.trim());
+    return typeof first === 'string' ? first.trim() : '';
+  }).filter(Boolean);
+  if (names.length === 0) return rows.length ? `${rows.length}명` : '없어요';
+  if (names.length <= 2) return names.join(', ');
+  return `${names.slice(0, 2).join(', ')} 외 ${names.length - 2}명`;
+}
+
 export function displayAnswer(field: FormField, answer?: Answer): string {
   if (!answer) return '아직 안 했어요';
   const { value, isApproximate } = answer;
   if (value === 'unknown') return '잘 모름 (확인 필요)';
+  if (Array.isArray(value)) return groupSummary(value);
   switch (field.type) {
     case 'money': {
       const amount = formatWon(Number(value));

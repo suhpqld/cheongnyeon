@@ -34,7 +34,7 @@ export const GET = withErrors(async (request: Request, { params }: { params: Pro
   const answerMap: AnswerMap = Object.fromEntries((answers.data ?? []).flatMap(answer => {
     const fieldKey = fieldKeys.get(answer.field_id);
     const { value } = answer;
-    if (!fieldKey || !(typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')) return [];
+    if (!fieldKey || !(typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || Array.isArray(value))) return [];
     const entry: Answer = { fieldKey, value, rawSpeech: null, inputMethod: 'unknown', isApproximate: answer.is_approximate };
     return [[fieldKey, entry]];
   }));

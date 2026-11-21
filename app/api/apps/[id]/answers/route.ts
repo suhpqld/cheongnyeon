@@ -11,7 +11,7 @@ import type { PrecheckRule } from '@/lib/types';
 
 const answerSchema = z.object({
   fieldKey: z.string().min(1),
-  value: z.union([z.boolean(), z.number(), z.string()]),
+  value: z.union([z.boolean(), z.number(), z.string(), z.array(z.record(z.string(), z.unknown()))]),
   rawSpeech: z.string().nullable().optional(),
   inputMethod: z.enum(['voice', 'button', 'text', 'unknown']),
   isApproximate: z.boolean().optional(),
