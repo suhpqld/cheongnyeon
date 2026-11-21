@@ -156,7 +156,7 @@ function FillQuestionScreen() {
         <Boknyang mood={state === 'approximate' ? 'thinking' : 'idle'} size="sm" />
         <h1>{questionText(activeField, helperMode)}</h1>
         {activeField.helpEasy && <p>{activeField.helpEasy}</p>}
-        <AnswerArea field={activeField} value={currentAnswer?.value} onAnswer={(value) => selectButton(value, state === 'approximate')} />
+        <AnswerArea key={activeField.key} field={activeField} value={currentAnswer?.value} answers={form.answers} onAnswer={(value) => selectButton(value, state === 'approximate')} />
         <MicButton appId={id} helperMode={helperMode} field={activeField} otherFields={form.fields.filter((item) => item.key !== activeField.key)} clarify={null} onResult={onVoiceResult} />
         {activeField.allowUnknown && state === 'question' && <BigButton variant="secondary" onClick={() => setState('unknown')}>잘 모르겠어요</BigButton>}
       </>}
