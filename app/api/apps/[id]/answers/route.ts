@@ -3,8 +3,11 @@ import { getDb, toCamel } from '@/lib/server/db';
 import { requireApp } from '@/lib/server/auth';
 import { fail, ok, withErrors } from '@/lib/server/http';
 import { normalizeDistrict, validateAnswer } from '@/lib/rules/form';
+import { discoverNewItems } from '@/lib/rules/discovery';
 import { PROGRAM_CODE } from '@/lib/constants';
 import type { Answer, AnswerMap, FormField } from '@/lib/types';
+import type { DocumentRule } from '@/lib/rules/checklist';
+import type { PrecheckRule } from '@/lib/types';
 
 const answerSchema = z.object({
   fieldKey: z.string().min(1),
@@ -27,6 +30,29 @@ async function loadFields(appId: string): Promise<FormField[]> {
   const fields = await getDb().from('form_field').select('*').eq('program_id', programId).order('sort_order', { ascending: true });
   if (fields.error) throw fields.error;
   return (fields.data ?? []).map((row) => toCamel<FormField>(row));
+}
+
+async function loadProgramId(appId: string): Promise<string> {
+  const { data, error } = await getDb().from('application').select('program_id').eq('id', appId).single();
+  if (error) throw error;
+  if (data.program_id) return data.program_id;
+  const program = await getDb().from('welfare_program').select('id').eq('code', PROGRAM_CODE).single();
+  if (program.error) throw program.error;
+  return program.data.id;
+}
+
+async function loadDiscoveryRules(programId: string): Promise<{ documentRules: DocumentRule[]; precheckRules: PrecheckRule[] }> {
+  const db = getDb();
+  const [documents, prechecks] = await Promise.all([
+    db.from('document_rule').select('*').eq('program_id', programId).order('sort_order', { ascending: true }),
+    db.from('precheck_rule').select('*').eq('program_id', programId).order('sort_order', { ascending: true }),
+  ]);
+  if (documents.error) throw documents.error;
+  if (prechecks.error) throw prechecks.error;
+  return {
+    documentRules: (documents.data ?? []).map((row) => toCamel<DocumentRule>(row)),
+    precheckRules: (prechecks.data ?? []).map((row) => toCamel<PrecheckRule>(row)),
+  };
 }
 
 async function loadAnswers(appId: string, fields: FormField[]): Promise<AnswerMap> {
@@ -52,9 +78,12 @@ export const PUT = withErrors(async (request: Request, { params }: { params: Pro
   if (!parsed.success) return fail(400, 'invalid', '답을 다시 확인해 주세요.');
 
   const fields = await loadFields(id);
+  const beforeAnswers = await loadAnswers(id, fields);
+  const rules = await loadDiscoveryRules(await loadProgramId(id));
   const byKey = new Map(fields.map((field) => [field.key, field]));
   const invalid: string[] = [];
   const rows: Record<string, unknown>[] = [];
+  const afterAnswers: AnswerMap = { ...beforeAnswers };
   for (const answer of parsed.data.answers) {
     const field = byKey.get(answer.fieldKey);
     if (!field) { invalid.push(answer.fieldKey); continue; }
@@ -62,6 +91,13 @@ export const PUT = withErrors(async (request: Request, { params }: { params: Pro
       ? normalizeDistrict(answer.value)
       : answer.value;
     if (!validateAnswer(field, value)) { invalid.push(answer.fieldKey); continue; }
+    afterAnswers[answer.fieldKey] = {
+      fieldKey: answer.fieldKey,
+      value,
+      rawSpeech: answer.rawSpeech ?? null,
+      inputMethod: answer.inputMethod,
+      isApproximate: answer.isApproximate ?? false,
+    };
     rows.push({
       application_id: id,
       field_id: field.id,
@@ -79,5 +115,6 @@ export const PUT = withErrors(async (request: Request, { params }: { params: Pro
     if (appError) throw appError;
   }
   if (invalid.length) return fail(400, 'invalid', '답을 다시 확인해 주세요.');
-  return ok({ answers: await loadAnswers(id, fields) });
+  const discovery = discoverNewItems(fields, beforeAnswers, afterAnswers, rules.documentRules, rules.precheckRules);
+  return ok({ answers: await loadAnswers(id, fields), ...discovery });
 });
