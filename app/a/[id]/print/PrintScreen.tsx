@@ -120,6 +120,7 @@ export default function PrintScreen({ appId }: { appId: string }) {
 
   return (
     <AppShell
+      step={4}
       back={{ href: base + '/ready' }}
       todo="출력하거나 PDF로 저장해 주세요"
       speakText="출력하거나 PDF로 저장해 주세요"
@@ -128,15 +129,15 @@ export default function PrintScreen({ appId }: { appId: string }) {
       <style>{PRINT_CSS}</style>
       <div className="grid gap-4 pb-4">
         <h1>신청서 출력</h1>
-        <p className="rounded-2xl border-[3px] border-ok bg-white p-4 font-bold leading-relaxed text-ok">✅ {ACCEPT_NOTICE}</p>
+        <p className="notice notice-good font-bold leading-relaxed">✅ {ACCEPT_NOTICE}</p>
 
-        <div className="grid gap-3 rounded-2xl border-2 border-ink bg-white p-4">
+        <div className="panel grid gap-3">
           <h2 className="text-[1.1rem] font-bold">신청서에 들어갈 개인 정보</h2>
           <p className="text-[0.9rem] leading-relaxed">
             여기 적은 값은 저장하지 않아요. 신청서에 찍혀서 출력만 돼요. 새로고침하면 지워져요. 모르는 칸은 비워 두고 주민센터에서 적어도 돼요.
           </p>
           {groups.map((g) => (
-            <fieldset key={g.title} className="grid gap-2 rounded-xl border-2 border-primary-soft p-3">
+            <fieldset key={g.title} className="grid gap-2 rounded-xl border border-hair bg-[#f8faff] p-3">
               <legend className="px-1 font-bold">{g.title}</legend>
               {g.keys.map((k) => (
                 <label key={k} className="grid gap-1 font-bold">
@@ -165,7 +166,7 @@ export default function PrintScreen({ appId }: { appId: string }) {
         {data && (
           <div className="grid gap-4">
             <h2 className="text-[1.1rem] font-bold">미리 보기 (공식 신청서, 마지막 장 준비 카드)</h2>
-            <div className="overflow-hidden rounded-xl border-2 border-ink">{pages}</div>
+            <div className="overflow-hidden rounded-xl border border-hair shadow-[0_14px_36px_rgba(31,54,106,0.08)]">{pages}</div>
           </div>
         )}
 
