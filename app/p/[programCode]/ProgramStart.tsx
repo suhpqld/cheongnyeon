@@ -32,7 +32,7 @@ const HELPERS: { mode: HelperMode; icon: string; label: string; sub: string }[] 
 ];
 
 const METHODS: { mode: FillMode; icon: string; label: string; sub: string }[] = [
-  { mode: 'question', icon: '💬', label: '질문에 답하며 채우기 (추천)', sub: '말이나 버튼으로 하나씩 대답해요' },
+  { mode: 'question', icon: '💬', label: '질문에 답하며 채우기 (추천)', sub: '버튼을 누르거나 글로 적어 하나씩 대답해요' },
   { mode: 'form', icon: '⌨️', label: '양식에 직접 적기', sub: '가족, 도우미가 양식 칸을 눌러 적어요' },
 ];
 
@@ -135,15 +135,16 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
       back={{ href: '/' }}
       todo={TODO}
       step={1}
+      wide
       speakText={`${info.program.name} 신청서를 불러왔어요. 누가 쓰고 있는지, 어떻게 채울지 골라 주세요.`}
     >
-      <div className="grid gap-5 pb-4">
-        <div>
+      <div className="grid gap-5 pb-4 pc:grid-cols-[minmax(0,1fr)_minmax(340px,0.8fr)] pc:items-start pc:gap-6">
+        <div className="pc:col-span-2">
           <h1>작성할 양식을 확인해요</h1>
           <p className="mt-1 text-muted">{info.program.name} 신청서 양식을 불러왔어요.</p>
         </div>
 
-        <section className="panel grid gap-3" aria-labelledby="forms-title">
+        <section className="panel grid gap-3 pc:sticky pc:top-4 pc:col-start-2 pc:row-start-2" aria-labelledby="forms-title">
           <h2 id="forms-title">📄 불러온 서식 {forms.length}개</h2>
           <ul className="grid gap-3">
             {forms.map((f) => (
@@ -170,7 +171,7 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
                     <p className="mt-2 text-[max(18px,0.9rem)]"><span className="marker marker-good mr-1">불러옴</span>칸 {f.slotCount}개를 답에 맞춰 미리 채워 드려요.</p>
                   </>
                 ) : (
-                  <p className="notice mt-2 text-[max(18px,0.9rem)] leading-relaxed"><span className="marker marker-neutral mr-1">준비 중</span>{PREPARING}</p>
+                  <p className="notice mt-2 text-[max(18px,0.9rem)] leading-relaxed">⏳ {PREPARING}</p>
                 )}
               </li>
             ))}
@@ -180,8 +181,10 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
           </p>
         </section>
 
+        <div className="grid gap-5 pc:col-start-1 pc:row-start-2">
         <section className="panel grid gap-3" aria-labelledby="helper-title">
           <h2 id="helper-title">누가 쓰고 있나요?</h2>
+          <div className="grid gap-3 pc:grid-cols-3">
           {HELPERS.map((h) => (
             <BigButton
               key={h.mode}
@@ -194,6 +197,7 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
               {h.label}
             </BigButton>
           ))}
+          </div>
           {helperMode && helperMode !== 'self' && (
             <p className="notice leading-relaxed">
               🗣 질문이 &quot;신청하시는 분은...&quot;으로 나와요. 신청하시는 분께 읽어 드리고 같이 대답해 주세요.
@@ -203,6 +207,7 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
 
         <section className="panel grid gap-3" aria-labelledby="method-title">
           <h2 id="method-title">채우는 방법 고르기</h2>
+          <div className="grid gap-3 pc:grid-cols-2">
           {METHODS.map((m) => (
             <BigButton
               key={m.mode}
@@ -215,6 +220,7 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
               {m.label}
             </BigButton>
           ))}
+          </div>
           <p className="text-[max(18px,0.9rem)] text-muted">두 방법 모두 같은 답으로 저장돼요. 채우는 중에 바꿀 수 있어요.</p>
         </section>
 
@@ -224,6 +230,7 @@ export default function ProgramStart({ programCode }: { programCode: string }) {
         </BigButton>
         {error && <p className="font-bold text-warn" role="alert">{error}</p>}
         <Disclaimer />
+        </div>
       </div>
     </AppShell>
   );

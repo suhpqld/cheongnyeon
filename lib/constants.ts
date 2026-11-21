@@ -50,6 +50,7 @@ export const STORAGE_KEYS = {
   session: 'boknyang.session',
   sound: 'boknyang.sound',
   fontSize: 'boknyang.fontSize',
+  view: 'boknyang.view',
   backup: (appId: string) => `boknyang.backup.${appId}`,
   script: (appId: string) => `boknyang.script.${appId}`,
 };

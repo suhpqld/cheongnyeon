@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
+import { useViewMode } from '@/lib/client/settings';
 import { formatCode } from '@/lib/format';
 import { ConfirmModal } from './ConfirmModal';
 import { StepBar } from './StepBar';
@@ -18,18 +19,21 @@ interface AppShellProps {
   plain?: boolean;
   /** 신청 준비 5단계 중 지금 단계 (0부터). 없으면 단계 표시 안 함 */
   step?: number;
+  /** PC 화면에서 넓게 (2열 배치가 있는 화면). 없으면 PC에서도 760px 폭으로 가운데 */
+  wide?: boolean;
 }
 
 const controlStyle = 'flex min-h-12 items-center justify-center rounded-xl px-2 text-center text-[max(16px,0.8rem)] font-bold text-ink';
 const toolStyle = controlStyle + ' border border-hair bg-white';
 
-export function AppShell({ children, back, showHome = true, todo, resumeCode, plain, step }: AppShellProps) {
+export function AppShell({ children, back, showHome = true, todo, resumeCode, plain, step, wide }: AppShellProps) {
   const router = useRouter();
   const [confirmHome, setConfirmHome] = useState(false);
+  const { view, setView } = useViewMode();
 
-  return <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col px-3">
+  return <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col px-3 pc:max-w-[1140px] pc:px-8">
     {!plain && <>
-      <header className="-mx-3 flex min-h-14 items-center justify-between gap-2 border-b border-[#e4eaf5] bg-white/90 px-3">
+      <header className="-mx-3 flex min-h-14 items-center justify-between gap-2 border-b border-[#e4eaf5] bg-white/90 px-3 pc:-mx-8 pc:min-h-[74px] pc:px-8">
         {showHome
           ? <button type="button" className="flex min-h-12 items-center gap-2 text-left" aria-label="복냥이 처음 화면" onClick={() => setConfirmHome(true)}>
               <Brand />
@@ -45,9 +49,13 @@ export function AppShell({ children, back, showHome = true, todo, resumeCode, pl
         confirmLabel="네, 갈게요" cancelLabel="아니요" onCancel={() => setConfirmHome(false)}
         onConfirm={() => { setConfirmHome(false); router.push('/'); }} />
     </>}
-    <main className="flex-1 py-3">{children}</main>
-    {!plain && resumeCode && <footer className="pb-2 text-center">
-      <p className={toolStyle + ' w-full'}>이어서 하기 번호 {formatCode(resumeCode)}</p>
+    <main className={'flex-1 py-3 ' + (wide ? '' : 'pc:mx-auto pc:w-full pc:max-w-[760px]')}>{children}</main>
+    {!plain && <footer className="grid gap-2 pb-4 text-center pc:grid-cols-2">
+      {resumeCode && <p className={toolStyle + ' w-full'}>이어서 하기 번호 {formatCode(resumeCode)}</p>}
+      {view && <button type="button" className={toolStyle + ' w-full ' + (resumeCode ? '' : 'pc:col-span-2')}
+        onClick={() => setView(view === 'pc' ? 'mobile' : 'pc')}>
+        {view === 'pc' ? '📱 모바일 화면으로 보기' : '🖥 PC 화면으로 보기'}
+      </button>}
     </footer>}
   </div>;
 }
@@ -56,7 +64,7 @@ function Brand() {
   return <>
     <span aria-hidden="true" className="grid size-8 place-items-center rounded-[10px] bg-primary text-white">✦</span>
     <strong className="text-[1.2rem] tracking-tight">복냥이</strong>
-    <span className="hidden border-l border-hair pl-2 text-[max(15px,0.75rem)] text-muted min-[400px]:inline">복지 신청 준비</span>
+    <span className="hidden border-l border-hair pl-2 text-[max(15px,0.75rem)] text-muted min-[400px]:inline pc:inline">복지 신청 준비</span>
   </>;
 }
 

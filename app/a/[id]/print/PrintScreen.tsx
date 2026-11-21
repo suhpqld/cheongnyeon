@@ -173,15 +173,21 @@ export default function PrintScreen({ appId }: { appId: string }) {
   return (
     <AppShell
       step={4}
+      wide
       back={{ href: base + '/ready' }}
       todo="출력하거나 PDF로 저장해 주세요"
       resumeCode={typeof session === 'object' ? session.resumeCode : null}
     >
       <style>{PRINT_CSS}</style>
-      <div className="grid gap-4 pb-4">
+      <div className="grid gap-4 pb-4 pc:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] pc:grid-rows-[auto_auto_1fr] pc:items-start pc:gap-6">
+        {/* PC: 위 제목 / 왼쪽 입력과 출력 버튼 / 오른쪽 미리 보기. 모바일은 이 순서 그대로 한 줄 */}
+        <div className="grid gap-4 pc:col-span-2">
         <h1>신청서 출력</h1>
         <p className="notice notice-good font-bold leading-relaxed">✅ {ACCEPT_NOTICE}</p>
 
+        </div>
+
+        <div className="grid gap-4 pc:col-start-1 pc:row-start-2">
         <div className="panel grid gap-3">
           <h2 className="text-[1.1rem] font-bold">신청서에 들어갈 개인 정보</h2>
           <p className="text-[0.9rem] leading-relaxed">
@@ -268,6 +274,9 @@ export default function PrintScreen({ appId }: { appId: string }) {
         <p className="text-[0.9rem]">PDF로 저장하려면 출력하기를 누른 뒤 프린터를 PDF로 저장으로 바꾸세요.</p>
 
         {error && <p role="alert" className="font-bold text-warn">{error}</p>}
+        </div>
+
+        <div className="grid gap-4 pc:sticky pc:top-4 pc:col-start-2 pc:row-span-2 pc:row-start-2 pc:max-h-[calc(100dvh-2rem)] pc:overflow-auto">
         {!data && !error && <Loading text="신청서와 준비 카드를 만들고 있어요" />}
         {data && (
           <div className="grid gap-4">
@@ -276,10 +285,14 @@ export default function PrintScreen({ appId }: { appId: string }) {
           </div>
         )}
 
+        </div>
+
+        <div className="grid gap-4 pc:col-start-1 pc:row-start-3">
         <BigButton href={base + '/visit'} icon="🏢" variant="secondary">
           주민센터에 다녀왔어요
         </BigButton>
         <Disclaimer />
+        </div>
       </div>
       {data && typeof document !== 'undefined' && createPortal(<div className="print-root">{pages}</div>, document.body)}
     </AppShell>

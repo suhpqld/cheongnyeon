@@ -148,8 +148,10 @@ export default function ReadyScreen({ appId }: { appId: string }) {
   const done = remaining.count === 0;
 
   return (
-    <AppShell back={{ href: base + '/fill' }} todo={TODO} speakText={remainingSpeakText(remaining)} resumeCode={resumeCode} step={3}>
-      <div className="grid gap-4 pb-4">
+    <AppShell back={{ href: base + '/fill' }} todo={TODO} speakText={remainingSpeakText(remaining)} resumeCode={resumeCode} step={3} wide>
+      <div className="grid gap-4 pb-4 pc:grid-cols-[minmax(0,1fr)_360px] pc:grid-rows-[auto_1fr] pc:items-start pc:gap-6">
+        {/* PC: 오른쪽 위 요약 / 왼쪽 탭 / 오른쪽 아래 버튼. 모바일은 이 순서 그대로 한 줄 */}
+        <div className="grid gap-4 pc:col-start-2 pc:row-start-1">
         <StageTracker
           compact
           status={data.app.status}
@@ -195,6 +197,9 @@ export default function ReadyScreen({ appId }: { appId: string }) {
           </Link>
         )}
 
+        </div>
+
+        <div className="grid gap-4 pc:col-start-1 pc:row-span-2 pc:row-start-1">
         <CardTabs selected={tab} remaining={remaining.count} onSelect={selectTab} />
 
         {error && (
@@ -235,13 +240,17 @@ export default function ReadyScreen({ appId }: { appId: string }) {
           )}
         </div>
 
-        <div className="sticky bottom-0 grid grid-cols-2 gap-3 bg-bg py-2">
+        </div>
+
+        <div className="grid gap-4 pc:col-start-2 pc:row-start-2">
+        <div className="sticky bottom-0 grid grid-cols-2 gap-3 bg-bg py-2 pc:static pc:grid-cols-1 pc:bg-transparent pc:py-0">
           <Link href={base + '/print'} className={done ? btn.primary : btn.secondary}>
             🖨 출력하러 가기
           </Link>
           <ShareButton appId={appId} />
         </div>
         <Disclaimer />
+        </div>
       </div>
     </AppShell>
   );
