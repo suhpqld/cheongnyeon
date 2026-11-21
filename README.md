@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 복냥이
 
-## Getting Started
+복냥이는 복지 신청서를 함께 쓰고, 주민센터에 낼 서류를 챙기고, 추가 서류 요청에 대응하도록 돕는 웹앱입니다. 첫 제도는 서울형 기초보장제도입니다. 제도 안내, 질문, 서류 규칙은 DB에 등록합니다.
 
-First, run the development server:
+## 이용 흐름
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- 본인, 가족, 주민센터·디지털배움터 도우미가 함께 질문에 답합니다. 정확히 모르는 내용은 확인할 일로 남깁니다.
+- 제출 준비 카드에서 챙길 서류, 받으러 갈 곳, 주민센터에서 할 말을 확인합니다. 공식 양식이 필요할 때는 옮겨 쓰는 카드를 출력합니다.
+- 추가 서류 요청은 받은 종이와 비교해 기한을 확인합니다. 내 신청 현황은 급한 일과 남은 일을 먼저 보여 주고 서류 준비와 실제 제출을 각각 표시합니다.
+- 8자리 번호로 다른 기기에서도 이어서 합니다. 가족 공유는 서류와 기한을 확인하는 읽기 전용 화면으로 열립니다.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+AI는 말과 종이를 읽고, 코드는 질문 순서·제출 서류·기한을 계산합니다. 복지 대상 판정, 로그인, 주민센터로 직접 제출하는 기능은 범위에서 제외합니다. 옮겨 쓰는 카드는 공식 신청서에 내용을 옮겨 적을 때 참고하는 자료입니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 로컬 실행
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. `npm install`로 기존 의존성을 받습니다.
+2. `.env.example`을 복사해 `.env.local`에 환경 변수를 설정합니다. Supabase·Claude 키는 서버에서 사용합니다.
+3. 새 Supabase 프로젝트에 `supabase/schema.sql`, `supabase/seed.sql` 순서로 적용합니다.
+4. `npm run dev`를 실행하고 `http://localhost:3000`에 접속합니다. 합치기 전에는 `npm run build`로 확인합니다.
 
-## Learn More
+상세 준비 절차는 [사전 준비](docs/08_사전준비.md), 화면과 API 약속은 [공통 규칙](docs/00_공통_먼저읽기.md), 테스트 순서는 [시연 점검](docs/07_시연_발표_점검.md)에 있습니다.
 
-To learn more about Next.js, take a look at the following resources:
+## 접근과 공유
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- 브라우저에서 Supabase 테이블을 직접 열지 않습니다. 보호된 API는 신청 건 토큰을 검사하며 DB 테이블에는 RLS를 적용합니다.
+- 이어서 하기 번호는 8자리입니다. 같은 주소에서 10분 안에 5번 틀리면 잠시 잠급니다.
+- 가족 링크는 요청할 때 만들고 최대 7일 동안 열립니다. 공유를 멈추면 기존 링크를 다시 열 수 없습니다. 가족 화면에는 신청 답변, 금액, 상세 주소, 음성·사진 원문, 이어서 하기 번호가 포함되지 않습니다.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 배포와 검증
 
-## Deploy on Vercel
+- [복냥이 공개 배포](https://cheongnyeon-seven.vercel.app/)
+- Next.js, TypeScript, Tailwind CSS, Supabase, Claude API, Vercel을 사용합니다. 음성 입력과 읽어 주기는 브라우저 Web Speech API를 사용합니다.
+- 시연 기기에서 한국어 음성 입력·읽어 주기와 사진 실패 시 글로 입력하는 경로를 확인합니다. 제출 준비 카드 출력물은 주민센터 담당자에게 보여 주고 사용 가능 여부를 기록합니다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## PULSE
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| 담당 | 역할 |
+| --- | --- |
+| 박수홍 | PM, 제출 준비 카드, 시연 |
+| 임채희 | 공통 기반, 신청 현황, 이어서 하기, 가족 공유 |
+| 김효은 | 신청 질문과 답변 확인 |
+| 이건희 | 음성과 AI |
+| 김예은 | 추가 서류 요청 |
