@@ -2,12 +2,23 @@
 
 import { useState } from 'react'
 import { BigButton } from '@/components/ui/BigButton'
-import type { AnswerValue, FormField } from '@/lib/types'
+import type { AnswerMap, AnswerValue, FormField } from '@/lib/types'
 import { CountButtons } from './CountButtons'
 import { DistrictGrid } from './DistrictGrid'
+import { DongPicker } from './DongPicker'
+import { MemberPicker } from './MemberPicker'
 import { MoneyInput } from './MoneyInput'
 
-export function AnswerArea({ field, value, onAnswer }: { field: FormField; value?: AnswerValue; onAnswer: (value: AnswerValue) => void }) {
+export function AnswerArea({ field, value, answers, onAnswer }: { field: FormField; value?: AnswerValue; answers?: AnswerMap; onAnswer: (value: AnswerValue) => void }) {
+  // 동: 앞에서 고른 구의 동 목록 / 같이 사는 사람: 여러 명 고르기 + 기타
+  if (field.key === 'dong') {
+    const district = answers?.district?.value
+    return <DongPicker key={field.key} district={typeof district === 'string' && district !== 'unknown' ? district : null} value={typeof value === 'string' && value !== 'unknown' ? value : undefined} onSelect={onAnswer} />
+  }
+  if (field.key === 'household_members') {
+    const size = answers?.household_size?.value
+    return <MemberPicker key={field.key} value={typeof value === 'string' && value !== 'unknown' ? value : undefined} others={typeof size === 'number' ? size - 1 : null} onConfirm={onAnswer} />
+  }
   if (field.type === 'yes_no') return <div className="grid grid-cols-2 gap-3"><BigButton onClick={() => onAnswer(true)}>예</BigButton><BigButton variant="secondary" onClick={() => onAnswer(false)}>아니오</BigButton></div>
   if (field.type === 'choice') return <div className="grid gap-3">{(field.options ?? []).map((option) => <BigButton key={option.value} variant="choice" onClick={() => onAnswer(option.value)}>{option.label}</BigButton>)}</div>
   if (field.type === 'district') return <DistrictGrid value={typeof value === 'string' ? value : undefined} onSelect={onAnswer} />
